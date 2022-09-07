@@ -1,0 +1,82 @@
+name: Build Docker Image
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  repository_dispatch:
+    types: [docker]
+  workflow_dispatch:
+    inputs:
+      Force_update:
+        description: "强制更新"
+        type: boolean
+        default: false
+        required: false
+  push:
+    branches:
+      - "main"
+      - "releases/**"
+    tags:
+      - v*
+    paths:
+      - "**/*docker*"
+      - "**/*py*"
+      - "**/*sh*"
+
+  schedule:
+    - cron: "0 8 */14 * *"
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: wgcf-docker
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Init
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/*.sh
+          full_image_name="${{ env.REGISTRY }}/${{ github.actor }}/${{ env.IMAGE_NAME }}"
+          echo "full_image_name=$full_image_name" >>"$GITHUB_ENV"
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.full_image_name }}
+
+      - name: Set Up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login To DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push Multiarch Image
+        uses: docker/build-push-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+          file: Dockerfile.alpine
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.full_image_name }}:latest
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: TG_Bot推送
+        if: failure()
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_USER_CHAT_ID: ${{ secrets.TG_USER_CHAT_ID }}
+        run: |
+          MESSAGE="Error:${GITHUB_WORKFLOW}-${GITHUB_JOB}-${GITHUB_RUN_NUMBER}"
+          $GITHUB_WORKSPACE/scripts/tg_bot_message.sh "$MESSAGE"

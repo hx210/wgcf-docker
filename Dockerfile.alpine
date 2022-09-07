@@ -7,8 +7,8 @@ RUN apk update -f \
   iproute2 net-tools iptables \
   wireguard-tools openresolv \
   && rm -rf /var/cache/apk/*
-  
-  
+
+
 RUN curl -fsSL git.io/wgcf.sh | bash && mkdir -p /wgcf
 
 WORKDIR /wgcf
