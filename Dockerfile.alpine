@@ -1,13 +1,23 @@
 FROM alpine:3
 
 
-RUN apk update -f \
+RUN set -xeu \
+  && apk update -f \
   && apk --no-cache add -f \
   curl ca-certificates \
   iproute2 net-tools iptables \
   wireguard-tools openresolv \
-  && rm -rf /var/cache/apk/*
+  && mkdir -p /workdir
 
+RUN set -xeu \
+  && apk add -q --no-cache --virtual .build-deps \
+  bash \
+  wget
+
+COPY scripts/gost_install.sh /workdir/gost_install.sh
+
+RUN set -xeu \
+  && bash /workdir/gost_install.sh
 
 RUN curl -fsSL git.io/wgcf.sh | bash && mkdir -p /wgcf
 
@@ -19,6 +29,14 @@ VOLUME /wgcf
 COPY entry.sh /entry.sh
 RUN chmod +x /entry.sh
 
+
+RUN set -xeu \
+  && rm -rf /var/cache/* /tmp/* \
+  && apk del .build-deps \
+  && rm -r /workdir
+
+
 ENTRYPOINT ["/entry.sh"]
 
 
+EXPOSE 1080
