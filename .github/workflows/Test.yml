@@ -21,7 +21,7 @@ jobs:
   Ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build image
       run: docker build -t wg . -f Dockerfile
     - name: Test single container
@@ -80,7 +80,7 @@ jobs:
   Alpine:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build image
       run: docker build -t wg-alpine . -f Dockerfile.alpine
     - name: Test single container
@@ -143,7 +143,7 @@ jobs:
   Ubuntu-HostMode:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build image
       run: docker build -t wg . -f Dockerfile
     - name: Test single container
@@ -201,7 +201,7 @@ jobs:
   Alpine-HostMode:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build image
       run: docker build -t wg-alpine . -f Dockerfile.alpine
     - name: Test single container
