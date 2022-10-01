@@ -32,7 +32,7 @@ jobs:
           -v /lib/modules:/lib/modules \
           -v $(pwd)/wgcf:/wgcf \
           wg-alpine
-          while ! docker logs wgcf | grep "OK, wgcf is up"; do
+          while ! docker logs wgcf | grep "is up"; do
             echo wait
             sleep 1
           done
