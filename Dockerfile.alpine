@@ -5,7 +5,7 @@ RUN set -xeu \
   && apk update -f \
   && apk --no-cache add -f \
   curl ca-certificates \
-  iproute2 net-tools iptables \
+  iproute2 net-tools iptables ip6tables \
   wireguard-tools openresolv \
   && mkdir -p /workdir
 
